@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root>
+	<PushPublishProfiles>
+        <PushPublishProfile>
+            <Name>cupertino-s3</Name>
+            <Protocol>HTTP</Protocol>
+            <BaseClass>com.vimond.wms.plugin.pushpublish.protocol.cupertino.PushPublishHTTPCupertinoS3Handler</BaseClass>
+            <UtilClass></UtilClass>
+            <Implementation>
+                <Name>cupertinos3</Name>
+            </Implementation>
+            <HTTPConfiguration>
+            </HTTPConfiguration>
+        </PushPublishProfile>
+	</PushPublishProfiles>
+</Root>

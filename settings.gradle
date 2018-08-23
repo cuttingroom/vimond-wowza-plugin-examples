@@ -1,0 +1,4 @@
+rootProject.name = 'vimond-wowza-plugin-examples'
+
+include 'vimond-live-ingest-wowza'
+

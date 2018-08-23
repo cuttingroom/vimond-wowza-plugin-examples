@@ -1,0 +1,31 @@
+  version: '2'
+
+services:
+
+  service:
+    container_name: wowza
+    build:
+      context: .
+    environment:
+      WSE_LIC: "WOWZE_SOFTWARE_LICENSE_KEY"
+      WSE_MGR_USER: "WOWZA_ADMIN_USER"
+      WSE_MGR_PASS: "WOWZA_ADMIN_PASSWORD"
+      LIVE_ARCHIVE_TENANT: "VIMOND_IO_TENANT"
+      LIVE_ARCHIVE_DURATION: "PT3H"
+      INGEST_S3_BUCKET: "vimond-io-live-ingest-bucket"
+      ARCHIVE_S3_REGION: "eu-west-1"
+      ARCHIVE_S3_ACCESS_KEY: "INGEST_BUCKET_AWS_ACCESS_KEY"
+      ARCHIVE_S3_ACCESS_SECRET: "INGEST_BUCKET_AWS_SECRET"
+      ARCHIVE_S3_BUCKET: "vimond-io-live-archive-bucket"
+      ARCHIVE_TEMP_DIR: "/tmp/"
+      HOUSEKEEPING_ENABLED: "false"
+      LIVE_ARCHIVE_ENABLED: "true"
+      LIVE_ARCHIVE_BASE_URL: "vimond-live-archive-url"
+      LIVE_ARCHIVE_USERNAME: "vimond-live-archive-username"
+      LIVE_ARCHIVE_PASSWORD: "vimond-live-archive-password"
+    expose:
+      - "8088"
+      - "1935"
+    ports:
+      - "8088:8088"
+      - "1935:1935"
