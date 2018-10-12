@@ -1,0 +1,99 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenLocal()
+        maven {
+            url 'https://vimond.jfrog.io/vimond/libs-releases'
+            credentials {
+                username = project.hasProperty('artifactory_user') ? project.artifactory_user : System.getenv()['ARTIFACTORY_USER']
+                password = project.hasProperty('artifactory_password') ? project.artifactory_password : System.getenv()['ARTIFACTORY_PASSWORD']
+            }
+        }
+    }
+    dependencies {
+        classpath(group: 'com.vimond.common', name: 'vimond-build-src', version: '3.+')
+        classpath(group: 'net.sf.proguard', name: 'proguard-gradle', version: '5.3.3')
+    }
+}
+
+import proguard.gradle.ProGuardTask
+
+group = 'com.vimond.live'
+
+apply plugin: 'vimond-build'
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'pmd'
+
+idea {
+    project {
+        languageLevel = '1.8'
+    }
+}
+
+allprojects {
+
+    ext.log4j_version = '1.2.17'
+    ext.common_langs_version = '2.6'
+    ext.aws_sdk_version = '1.11.280'
+
+}
+
+subprojects {
+
+    apply plugin: 'java'
+    apply plugin: 'vimond-project'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    def shrunkJar = 'build/libs/shrunk.jar';
+
+    task buildZip(type: Zip) {
+        from compileJava
+        from processResources
+        into('lib') {
+            from configurations.runtime
+        }
+    }
+
+    task shrink(type: ProGuardTask) {
+        configuration '../proguard-base.txt'
+        injars 'build/libs/' + project.name + "-" + version + '.jar'
+        outjars shrunkJar
+    }
+
+    task renameJar {
+        doLast {
+            file(shrunkJar).renameTo(file('build/libs/' + project.name + "-" + version + '.jar'))
+        }
+    }
+
+    task versionTxt() {
+        doLast {
+            def file = new File("$buildDir/resources/main/version.txt")
+            file.getParentFile().mkdirs();
+            file.text = version
+        }
+    }
+
+    assemble.dependsOn versionTxt
+
+}
+
+
+project('vimond-live-ingest-wowza') {
+    description = 'Vimond live ingest wowza plugin'
+
+    dependencies {
+        compile(group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: aws_sdk_version)
+        compile(group: 'commons-lang', name: 'commons-lang', version: common_langs_version)
+        compile(group: 'log4j', name: 'log4j', version: log4j_version)
+        compile fileTree(dir: 'libs', include: '*.jar')
+    }
+
+    pmd {
+        ignoreFailures = true
+    }
+}
+

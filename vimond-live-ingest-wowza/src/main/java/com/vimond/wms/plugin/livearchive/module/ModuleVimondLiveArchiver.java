@@ -3,6 +3,7 @@ package com.vimond.wms.plugin.livearchive.module;
 import com.vimond.wms.plugin.livearchive.client.archive.Bucket;
 import com.vimond.wms.plugin.livearchive.client.archive.ClipStatus;
 import com.vimond.wms.plugin.livearchive.client.archive.VimondArchiveClient;
+import com.vimond.wms.plugin.livearchive.client.auth0.Auth0Credentials;
 import com.vimond.wms.plugin.livearchive.client.pushtarget.TargetClient;
 import com.wowza.wms.amf.AMFPacket;
 import com.wowza.wms.application.IApplicationInstance;
@@ -98,12 +99,7 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                         VimondLiveArchiveModuleConfiguration config = new VimondLiveArchiveModuleConfiguration(appInstance);
 
                         // Register new live archive ingest location towards Vimond Live Archive API
-                        VimondArchiveClient vimondArchiveClient = new VimondArchiveClient(
-                                config.getVimondLiveArchiveApiBaseUrl(),
-                                config.getVimondLiveArchiveApiUsername(),
-                                config.getVimondLiveArchiveApiPassword(),
-                                config.getVimondLiveArchiveApiTenant()
-                        );
+                        VimondArchiveClient vimondArchiveClient = createVimondArchiveClient(config);
 
 
                         Optional<String> eventResource = vimondArchiveClient.createEvent(
@@ -176,12 +172,7 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
 
 
                 // Archiving is activated, we will remove the stream and archive it as VOD
-                VimondArchiveClient vimondArchiveClient = new VimondArchiveClient(
-                        config.getVimondLiveArchiveApiBaseUrl(),
-                        config.getVimondLiveArchiveApiUsername(),
-                        config.getVimondLiveArchiveApiPassword(),
-                        config.getVimondLiveArchiveApiTenant()
-                );
+                VimondArchiveClient vimondArchiveClient = createVimondArchiveClient(config);
 
 
                 if (config.getVimondLiveArchiveEnabled()) {
@@ -244,5 +235,21 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
     public void onStreamDestory(IMediaStream stream)
     {
         stopPublisher(stream);
+    }
+
+    private static VimondArchiveClient createVimondArchiveClient(VimondLiveArchiveModuleConfiguration config){
+        VimondArchiveClient vimondArchiveClient = new VimondArchiveClient(
+                config.getVimondLiveArchiveApiBaseUrl(),
+                config.getVimondLiveArchiveApiTenant(),
+                config.getVimondLiveArchiveAuth0Tenant(),
+                config.getVimondLiveArchiveAuth0Region(),
+                new Auth0Credentials(
+                        config.getVimondLiveArchiveAuth0ClientId(),
+                        config.getVimondLiveArchiveAuth0ClientSecret(),
+                        config.getVimondLiveArchiveAuth0Audience(),
+                        Auth0Credentials.CLIENT_CREDENTIALS_GRANT_TYPE
+                )
+        );
+        return vimondArchiveClient;
     }
 }

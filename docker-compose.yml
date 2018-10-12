@@ -1,4 +1,4 @@
-  version: '2'
+version: '2'
 
 services:
 
@@ -20,9 +20,12 @@ services:
       ARCHIVE_TEMP_DIR: "/tmp/"
       HOUSEKEEPING_ENABLED: "false"
       LIVE_ARCHIVE_ENABLED: "true"
-      LIVE_ARCHIVE_BASE_URL: "vimond-live-archive-url"
-      LIVE_ARCHIVE_USERNAME: "vimond-live-archive-username"
-      LIVE_ARCHIVE_PASSWORD: "vimond-live-archive-password"
+      LIVE_ARCHIVE_BASE_URL: "VIMOND_LIVE_ARCHIVE_BASE_URL"
+      AUTH0_TENANT: "AUTH0_TENANT"
+      AUTH0_REGION: "AUTH0_REGION"
+      AUTH0_AUDIENCE: "AUTH0_AUDIENCE"
+      AUTH0_CLIENT_ID: "AUTH0_CLIENT_ID"
+      AUTH0_CLIENT_SECRET: "AUTH0_CLIENT_SECRET"
     expose:
       - "8088"
       - "1935"

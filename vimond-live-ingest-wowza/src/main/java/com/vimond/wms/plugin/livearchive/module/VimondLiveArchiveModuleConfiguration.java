@@ -14,8 +14,12 @@ public class VimondLiveArchiveModuleConfiguration {
 
     private String vimondLiveArchiveApiBaseUrl;
     private String vimondLiveArchiveApiTenant;
-    private String vimondLiveArchiveApiUsername;
-    private String vimondLiveArchiveApiPassword;
+
+    private String vimondLiveArchiveAuth0Tenant;
+    private String vimondLiveArchiveAuth0Region;
+    private String vimondLiveArchiveAuth0Audience;
+    private String vimondLiveArchiveAuth0ClientId;
+    private String vimondLiveArchiveAuth0ClientSecret;
 
     private String vimondLiveArchiveRegion;
     private String vimondLiveArchiveIngestBucketName;
@@ -42,8 +46,11 @@ public class VimondLiveArchiveModuleConfiguration {
         }
         this.vimondLiveArchiveApiTenant = archiveTenant;
 
-        this.vimondLiveArchiveApiUsername = appInstance.getProperties().getPropertyStr("liveArchiveBaseUsername");
-        this.vimondLiveArchiveApiPassword = appInstance.getProperties().getPropertyStr("liveArchiveBasePassword");
+        this.vimondLiveArchiveAuth0Tenant = appInstance.getProperties().getPropertyStr("auth0Tenant");
+        this.vimondLiveArchiveAuth0Region = appInstance.getProperties().getPropertyStr("auth0Region");
+        this.vimondLiveArchiveAuth0Audience = appInstance.getProperties().getPropertyStr("auth0Audience");
+        this.vimondLiveArchiveAuth0ClientId = appInstance.getProperties().getPropertyStr("auth0ClientId");
+        this.vimondLiveArchiveAuth0ClientSecret = appInstance.getProperties().getPropertyStr("auth0ClientSecret");
 
         this.vimondLiveArchiveRegion = appInstance.getProperties().getPropertyStr("pushPublishS3Region");
         this.vimondLiveArchiveIngestBucketName = appInstance.getProperties().getPropertyStr("pushPublishS3Bucket");
@@ -69,12 +76,24 @@ public class VimondLiveArchiveModuleConfiguration {
         return vimondLiveArchiveApiTenant;
     }
 
-    public String getVimondLiveArchiveApiUsername() {
-        return vimondLiveArchiveApiUsername;
+    public String getVimondLiveArchiveAuth0Tenant() {
+        return vimondLiveArchiveAuth0Tenant;
     }
 
-    public String getVimondLiveArchiveApiPassword() {
-        return vimondLiveArchiveApiPassword;
+    public String getVimondLiveArchiveAuth0Region() {
+        return vimondLiveArchiveAuth0Region;
+    }
+
+    public String getVimondLiveArchiveAuth0Audience() {
+        return vimondLiveArchiveAuth0Audience;
+    }
+
+    public String getVimondLiveArchiveAuth0ClientId() {
+        return vimondLiveArchiveAuth0ClientId;
+    }
+
+    public String getVimondLiveArchiveAuth0ClientSecret() {
+        return vimondLiveArchiveAuth0ClientSecret;
     }
 
     public String getVimondLiveArchiveRegion() {

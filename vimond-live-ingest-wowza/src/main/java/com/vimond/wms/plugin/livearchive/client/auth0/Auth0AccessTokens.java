@@ -1,37 +1,38 @@
-package com.vimond.wms.plugin.livearchive.client.archive;
+package com.vimond.wms.plugin.livearchive.client.auth0;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * .
+ *
  * @author Vimond Media Solution AS
- * @since 2018-03-13
+ * @since 2018-10-11
  */
-public class VimondSource {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Auth0AccessTokens {
 
     // ---------------------------------------------------------------
     // STATE
     // ---------------------------------------------------------------
 
-    private final String name;
-    private final VimondArchiveInput input;
-    private final VimondArchive archive;
+    private final String access_token;
+    private final String token_type;
 
     // ---------------------------------------------------------------
     // CONSTRUCTOR AND FACTORY METHODS
     // ---------------------------------------------------------------
 
     @JsonCreator
-    public VimondSource(
-            @JsonProperty("name") String name,
-            @JsonProperty("input") VimondArchiveInput input,
-            @JsonProperty("archive") VimondArchive archive
+    public Auth0AccessTokens(
+            @JsonProperty("access_token") String access_token,
+            @JsonProperty("token_type") String token_type
     ) {
-        this.name = name;
-        this.input = input;
-        this.archive = archive;
+        this.access_token = access_token;
+        this.token_type = token_type;
     }
+
 
     // ---------------------------------------------------------------
     // CORE METHODS
@@ -39,10 +40,9 @@ public class VimondSource {
 
     @Override
     public String toString() {
-        return "Source{" +
-                "name='" + name + '\'' +
-                ", input=" + input +
-                ", archive=" + archive +
+        return "Auth0LoginResponse{" +
+                "access_token='" + access_token + '\'' +
+                ", token_type='" + token_type + '\'' +
                 '}';
     }
 
@@ -55,16 +55,16 @@ public class VimondSource {
     // GETTERS AND SETTERS
     // ---------------------------------------------------------------
 
-    public String getName() {
-        return name;
+
+    public String getAccess_token() {
+        return access_token;
     }
 
-    public VimondArchiveInput getInput() {
-        return input;
+    public String getToken_type() {
+        return token_type;
     }
 
-    public VimondArchive getArchive() {
-        return archive;
+    public String getAuthorizationHeader() {
+        return this.getToken_type() + " " + this.getAccess_token();
     }
-
 }

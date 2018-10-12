@@ -290,13 +290,28 @@
                 <Type>String</Type>
             </Property>
             <Property>
-                <Name>liveArchiveBaseUsername</Name>
-                <Value>${LIVE_ARCHIVE_USERNAME}</Value>
+                <Name>auth0Tenant</Name>
+                <Value>${AUTH0_TENANT}</Value>
                 <Type>String</Type>
             </Property>
             <Property>
-                <Name>liveArchiveBasePassword</Name>
-                <Value>${LIVE_ARCHIVE_PASSWORD}</Value>
+                <Name>auth0Region</Name>
+                <Value>${AUTH0_REGION}</Value>
+                <Type>String</Type>
+            </Property>
+            <Property>
+                <Name>auth0Audience</Name>
+                <Value>${AUTH0_AUDIENCE}</Value>
+                <Type>String</Type>
+            </Property>
+            <Property>
+                <Name>auth0ClientId</Name>
+                <Value>${AUTH0_CLIENT_ID}</Value>
+                <Type>String</Type>
+            </Property>
+            <Property>
+                <Name>auth0ClientSecret</Name>
+                <Value>${AUTH0_CLIENT_SECRET}</Value>
                 <Type>String</Type>
             </Property>
             <Property>

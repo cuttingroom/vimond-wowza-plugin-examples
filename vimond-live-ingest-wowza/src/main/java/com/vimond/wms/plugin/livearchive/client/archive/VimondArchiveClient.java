@@ -1,18 +1,18 @@
 package com.vimond.wms.plugin.livearchive.client.archive;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vimond.wms.plugin.livearchive.client.auth0.Auth0AccessTokens;
+import com.vimond.wms.plugin.livearchive.client.auth0.Auth0Client;
+import com.vimond.wms.plugin.livearchive.client.auth0.Auth0Credentials;
 import com.wowza.wms.logging.WMSLoggerFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
@@ -28,28 +28,25 @@ import java.util.Optional;
  */
 public class VimondArchiveClient {
 
-    private String baseUrl;
     private CloseableHttpClient client;
     private ObjectMapper mapper = new ObjectMapper();
     private HttpHost target;
+    private String baseUrl;
     private String tenant;
+    private Optional<Auth0AccessTokens> auth0Token = Optional.empty();
 
 
 
-    public VimondArchiveClient(String baseUrl, String username, String password, String tenant) {
+    public VimondArchiveClient(String baseUrl, String tenant, String auth0Tenant, String auth0Region, Auth0Credentials auth0Credentials) {
         this.tenant = tenant;
         this.baseUrl = baseUrl;
 
         this.target = HttpHost.create(baseUrl);
 
+        Auth0Client auth0Client = new Auth0Client(auth0Tenant, auth0Region);
+        this.auth0Token = auth0Client.login(auth0Credentials);
 
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-                new AuthScope(this.target.getHostName(), this.target.getPort()),
-                new UsernamePasswordCredentials(username, password));
-        this.client = HttpClients.custom()
-                .setDefaultCredentialsProvider(credsProvider)
-                .build();
+        this.client = HttpClients.custom().build();
 
         this.mapper = new ObjectMapper();
     }
@@ -63,8 +60,7 @@ public class VimondArchiveClient {
             VimondSource source = new VimondSource(streamName, input, archive);
 
             HttpPost request = new HttpPost(baseUrl + "/tenants/" + this.tenant + "/sources");
-            request.addHeader("Content-Type", "application/json");
-            request.addHeader("Accept", "application/json");
+            request = (HttpPost) setHeaders(request);
 
 
             request.setEntity(new StringEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(source)));
@@ -89,8 +85,8 @@ public class VimondArchiveClient {
             URIBuilder builder = new URIBuilder(baseUrl + resource + "/clip");
 
             HttpPost request = new HttpPost(builder.build());
-            request.addHeader("Content-Type", "application/json");
-            request.addHeader("Accept", "application/json");
+            request = (HttpPost) setHeaders(request);
+
             request.setEntity(new StringEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(clip)));
 
             HttpResponse response = this.client.execute(this.target, request);
@@ -113,8 +109,7 @@ public class VimondArchiveClient {
             URIBuilder builder = new URIBuilder(resource);
 
             HttpDelete request = new HttpDelete(builder.build());
-            request.addHeader("Content-Type", "application/json");
-            request.addHeader("Accept", "application/json");
+            request = (HttpDelete) setHeaders(request);
 
             this.client.execute(this.target, request);
 
@@ -123,6 +118,15 @@ public class VimondArchiveClient {
             WMSLoggerFactory.getLogger(null).error(e);
             return false;
         }
+    }
+
+    private HttpRequestBase setHeaders(HttpRequestBase request) {
+        request.addHeader("Content-Type", "application/json");
+        request.addHeader("Accept", "application/json");
+        if (auth0Token.isPresent()) {
+            request.addHeader("Authorization", auth0Token.get().getAuthorizationHeader());
+        }
+        return request;
     }
 
 

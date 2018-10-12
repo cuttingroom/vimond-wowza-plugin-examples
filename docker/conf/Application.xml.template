@@ -269,16 +269,31 @@
 				<Value>${ARCHIVE_TEMP_DIR}</Value>
 				<Type>String</Type>
 			</Property>
-			<Property>
-				<Name>pushPublishApiUsername</Name>
-				<Value>${WSE_MGR_USER}</Value>
-				<Type>String</Type>
-			</Property>
             <Property>
-                <Name>pushPublishApiPassword</Name>
-                <Value>${WSE_MGR_PASS}</Value>
-				<Type>String</Type>
-			</Property>
+                <Name>auth0Tenant</Name>
+                <Value>${AUTH0_TENANT}</Value>
+                <Type>String</Type>
+            </Property>
+            <Property>
+                <Name>auth0Region</Name>
+                <Value>${AUTH0_REGION}</Value>
+                <Type>String</Type>
+            </Property>
+            <Property>
+                <Name>auth0Audience</Name>
+                <Value>${AUTH0_AUDIENCE}</Value>
+                <Type>String</Type>
+            </Property>
+            <Property>
+                <Name>auth0ClientId</Name>
+                <Value>${AUTH0_CLIENT_ID}</Value>
+                <Type>String</Type>
+            </Property>
+            <Property>
+                <Name>auth0ClientSecret</Name>
+                <Value>${AUTH0_CLIENT_SECRET}</Value>
+                <Type>String</Type>
+            </Property>
             <Property>
                 <Name>liveArchiveEnabled</Name>
                 <Value>${LIVE_ARCHIVE_ENABLED}</Value>

@@ -57,8 +57,11 @@ ENV \
     LIVE_ARCHIVE_ENABLED="true" \
     LIVE_ARCHIVE_TENANT="sandbox" \
     LIVE_ARCHIVE_BASE_URL="" \
-    LIVE_ARCHIVE_USERNAME="" \
-    LIVE_ARCHIVE_PASSWORD="" \
+    AUTH0_TENANT="" \
+    AUTH0_REGION="" \
+    AUTH0_AUDIENCE="" \
+    AUTH0_CLIENT_ID="" \
+    AUTH0_CLIENT_SECRET="" \
     LIVE_ARCHIVE_DURATION="PT3H"
 
 ENTRYPOINT ["/home/wowza/entrypoint.sh"]
