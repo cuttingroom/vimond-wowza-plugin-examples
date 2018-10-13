@@ -18,16 +18,14 @@ import java.util.Optional;
  */
 public class Auth0Client {
 
-    private String tenant;
-    private String region;
+    private String domain;
     private CloseableHttpClient client;
     private ObjectMapper mapper = new ObjectMapper();
 
 
 
-    public Auth0Client(String tenant, String region) {
-        this.tenant = tenant;
-        this.region = region;
+    public Auth0Client(String domain) {
+        this.domain = domain;
         this.client = HttpClients.custom().build();
         this.mapper = new ObjectMapper();
     }
@@ -35,7 +33,7 @@ public class Auth0Client {
 
     public Optional<Auth0AccessTokens> login(Auth0Credentials credentials) {
         try {
-            HttpPost request = new HttpPost("https://" + this.tenant + "." + this.region + ".auth0.com/oauth/token");
+            HttpPost request = new HttpPost(this.domain + "/oauth/token");
             request.addHeader("Content-Type", "application/json");
             request.setEntity(new StringEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(credentials)));
 

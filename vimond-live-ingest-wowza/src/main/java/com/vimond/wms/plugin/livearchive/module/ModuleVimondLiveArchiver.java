@@ -241,8 +241,7 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
         VimondArchiveClient vimondArchiveClient = new VimondArchiveClient(
                 config.getVimondLiveArchiveApiBaseUrl(),
                 config.getVimondLiveArchiveApiTenant(),
-                config.getVimondLiveArchiveAuth0Tenant(),
-                config.getVimondLiveArchiveAuth0Region(),
+                config.getVimondLiveArchiveAuth0Domain(),
                 new Auth0Credentials(
                         config.getVimondLiveArchiveAuth0ClientId(),
                         config.getVimondLiveArchiveAuth0ClientSecret(),

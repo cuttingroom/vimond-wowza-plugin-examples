@@ -37,13 +37,13 @@ public class VimondArchiveClient {
 
 
 
-    public VimondArchiveClient(String baseUrl, String tenant, String auth0Tenant, String auth0Region, Auth0Credentials auth0Credentials) {
+    public VimondArchiveClient(String baseUrl, String tenant, String auth0Domain, Auth0Credentials auth0Credentials) {
         this.tenant = tenant;
         this.baseUrl = baseUrl;
 
         this.target = HttpHost.create(baseUrl);
 
-        Auth0Client auth0Client = new Auth0Client(auth0Tenant, auth0Region);
+        Auth0Client auth0Client = new Auth0Client(auth0Domain);
         this.auth0Token = auth0Client.login(auth0Credentials);
 
         this.client = HttpClients.custom().build();
