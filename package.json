@@ -1,0 +1,20 @@
+{
+  "name": "vimond-wowza-plugin-examples",
+  "version": "0.0.0",
+  "description": "Wowza Streaming Engine modules for pushing a HLS stream to S3 and registering the stream for use in Vimond IO",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postversion": "git push --follow-tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vimond/vimond-wowza-plugin-examples.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vimond/vimond-wowza-plugin-examples/issues"
+  },
+  "homepage": "https://github.com/vimond/vimond-wowza-plugin-examples#readme"
+}
