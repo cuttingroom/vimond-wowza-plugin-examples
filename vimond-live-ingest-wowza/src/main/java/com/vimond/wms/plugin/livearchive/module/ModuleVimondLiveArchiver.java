@@ -138,7 +138,7 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                 }
                 catch(Exception e)
                 {
-                    WMSLoggerFactory.getLogger(null).error("ModulePushPublishSimpleExample#StreamNotify.onPublish: "+e.toString());
+                    WMSLoggerFactory.getLogger(null).error("ModuleVimondLiveArchiver#StreamNotify.onPublish: "+e.toString());
                 }
             }
         }
@@ -156,6 +156,9 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
             synchronized(publishers) {
 
                 StreamInitInfo streamInitInfo = publishers.remove(stream);
+                if(streamInitInfo == null) {
+                    return;
+                }
 
                 IApplicationInstance appInstance = stream.getStreams().getAppInstance();
 
@@ -223,7 +226,7 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
         }
         catch(Exception e)
         {
-            WMSLoggerFactory.getLogger(null).error("ModulePushPublishSimpleExample#StreamNotify.onUnPublish: "+e.toString());
+            WMSLoggerFactory.getLogger(null).error("ModuleVimondLiveArchiver#StreamNotify.onUnPublish: "+e.toString());
         }
     }
 
