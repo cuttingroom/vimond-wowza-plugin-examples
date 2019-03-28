@@ -290,13 +290,8 @@
                 <Type>String</Type>
             </Property>
             <Property>
-                <Name>auth0Tenant</Name>
-                <Value>${AUTH0_TENANT}</Value>
-                <Type>String</Type>
-            </Property>
-            <Property>
-                <Name>auth0Region</Name>
-                <Value>${AUTH0_REGION}</Value>
+                <Name>auth0Domain</Name>
+                <Value>${AUTH0_DOMAIN}</Value>
                 <Type>String</Type>
             </Property>
             <Property>

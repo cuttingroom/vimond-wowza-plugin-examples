@@ -57,8 +57,7 @@ ENV \
     LIVE_ARCHIVE_ENABLED="true" \
     LIVE_ARCHIVE_TENANT="sandbox" \
     LIVE_ARCHIVE_BASE_URL="" \
-    AUTH0_TENANT="" \
-    AUTH0_REGION="" \
+    AUTH0_DOMAIN="" \
     AUTH0_AUDIENCE="" \
     AUTH0_CLIENT_ID="" \
     AUTH0_CLIENT_SECRET="" \
