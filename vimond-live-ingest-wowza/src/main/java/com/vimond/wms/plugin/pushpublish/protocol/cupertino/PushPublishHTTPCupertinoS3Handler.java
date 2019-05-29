@@ -519,7 +519,7 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
 
 
     private File createTempDir(String tmpDir){
-        logError("createTempDir", "createTempDir: "+tmpDir);
+        logWarn("createTempDir", "createTempDir: "+tmpDir);
         File tempDir = new File(tmpDir);
         logInfo("load", "Using: " + tempDir);
         if (!tempDir.exists())

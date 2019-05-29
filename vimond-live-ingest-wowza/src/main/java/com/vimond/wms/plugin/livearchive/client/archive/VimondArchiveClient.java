@@ -16,6 +16,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -60,19 +61,14 @@ public class VimondArchiveClient {
             VimondSource source = new VimondSource(streamName, input, archive);
 
             HttpPost request = new HttpPost(baseUrl + "/tenants/" + this.tenant + "/sources");
-            request = (HttpPost) setHeaders(request);
-
-
-            request.setEntity(new StringEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(source)));
-
-            HttpResponse response = this.client.execute(this.target, request);
-
+            HttpResponse response = getHttpResponse(source, request);
             Header location = response.getFirstHeader("location");
             URI uri = new URI(location.getValue());
 
+            WMSLoggerFactory.getLogger(null).warn("ModuleVimondLiveArchiver.VimondArchiveClient.createEvent: " + uri.getPath());
             return Optional.of(uri.getPath());
         } catch (Exception e) {
-            WMSLoggerFactory.getLogger(null).error(e);
+            WMSLoggerFactory.getLogger(null).error("ModuleVimondLiveArchiver.VimondArchiveClient.createEvent", e);
             return Optional.empty();
         }
     }
@@ -85,48 +81,59 @@ public class VimondArchiveClient {
             URIBuilder builder = new URIBuilder(baseUrl + resource + "/clip");
 
             HttpPost request = new HttpPost(builder.build());
-            request = (HttpPost) setHeaders(request);
-
-            request.setEntity(new StringEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(clip)));
-
-            HttpResponse response = this.client.execute(this.target, request);
-
+            HttpResponse response = getHttpResponse(clip, request);
             ClipStatus clipStatus = this.mapper.readValue(response.getEntity().getContent(), ClipStatus.class);
-
 
             return Optional.of(clipStatus);
         } catch (Exception e) {
-            WMSLoggerFactory.getLogger(null).error(e);
+            WMSLoggerFactory.getLogger(null).error("ModuleVimondLiveArchiver.VimondArchiveClient.createClip",  e);
             return Optional.empty();
         }
+    }
+
+    private HttpResponse getHttpResponse(Object object, HttpPost request) throws IOException {
+
+        setHeaders(request);
+        request.setEntity(new StringEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object)));
+
+        HttpResponse response = this.client.execute(this.target, request);
+        if(response.getStatusLine().getStatusCode() == 401) {
+            String error = "ModuleVimondLiveArchiver.VimondArchiveClient Authentication failed. Please check Vimond Archive and Auth0 configuration.";
+            WMSLoggerFactory.getLogger(null).error(error);
+            throw new RuntimeException(error);
+        }
+        return response;
     }
 
 
     public boolean deleteEvent(String resource) {
         try {
-
-
             URIBuilder builder = new URIBuilder(resource);
 
             HttpDelete request = new HttpDelete(builder.build());
-            request = (HttpDelete) setHeaders(request);
+            setHeaders(request);
 
-            this.client.execute(this.target, request);
+            HttpResponse response = this.client.execute(this.target, request);
+            if(response.getStatusLine().getStatusCode() == 401) {
+                WMSLoggerFactory.getLogger(null).error("ModuleVimondLiveArchiver.VimondArchiveClient Authentication failed. Please check Auth0 configuration.");
+                return false;
+            }
+
+            WMSLoggerFactory.getLogger(null).warn("ModuleVimondLiveArchiver.VimondArchiveClient.deleteEvent: " + request.getURI().getPath());
 
             return true;
         } catch (Exception e) {
-            WMSLoggerFactory.getLogger(null).error(e);
+            WMSLoggerFactory.getLogger(null).error("ModuleVimondLiveArchiver.VimondArchiveClient.deleteEvent", e);
             return false;
         }
     }
 
-    private HttpRequestBase setHeaders(HttpRequestBase request) {
+    private void setHeaders(HttpRequestBase request) {
         request.addHeader("Content-Type", "application/json");
         request.addHeader("Accept", "application/json");
         if (auth0Token.isPresent()) {
             request.addHeader("Authorization", auth0Token.get().getAuthorizationHeader());
         }
-        return request;
     }
 
 

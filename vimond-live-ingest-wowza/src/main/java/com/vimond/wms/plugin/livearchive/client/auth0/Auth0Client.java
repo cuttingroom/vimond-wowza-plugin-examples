@@ -7,6 +7,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 import java.util.Optional;
 
@@ -38,13 +39,25 @@ public class Auth0Client {
             request.setEntity(new StringEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(credentials)));
 
             HttpResponse response = this.client.execute(request);
+            if(response.getStatusLine().getStatusCode() == 401) {
+                throw new RuntimeException("Authentication failed. Please check Auth0 configuration.");
+            }
 
             Auth0AccessTokens auth0Token = this.mapper.readValue(response.getEntity().getContent(), Auth0AccessTokens.class);
-
-            return Optional.of(auth0Token);
+            if(auth0Token.getAuthorizationHeader() == null) {
+                throw new RuntimeException("Auth0Client Authentication failed. Please check Auth0 configuration.");
+            }
+             return Optional.of(auth0Token);
         } catch (Exception e) {
-            WMSLoggerFactory.getLogger(null).error(e);
-            return Optional.empty();
+            String errorMessage = "ModuleVimondLiveArchiver.Auth0Client auth failed for [ " +
+                    "domain: " + this.domain + ", " +
+                    "audience: " + credentials.getAudience() + ", " +
+                    "client_id: " + credentials.getClient_id() + ", " +
+                    "client_secret: XXXXXXXXXX" + credentials.getClient_secret().substring(4) + ", " +
+                    "grant_type" + credentials.getGrant_type() + ", " +
+                    "]";
+            WMSLoggerFactory.getLogger(null).error(errorMessage, e);
+            throw new RuntimeException(errorMessage);
         }
     }
 

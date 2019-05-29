@@ -1,6 +1,8 @@
 package com.vimond.wms.plugin.livearchive.module;
 
 import com.wowza.wms.application.IApplicationInstance;
+import com.wowza.wms.logging.WMSLogger;
+import com.wowza.wms.logging.WMSLoggerFactory;
 
 import java.time.Duration;
 
@@ -37,6 +39,9 @@ public class VimondLiveArchiveModuleConfiguration {
     private Boolean wowzaPushTargetLocalHousekeeping;
 
     public VimondLiveArchiveModuleConfiguration(IApplicationInstance appInstance) {
+        WMSLogger logger = WMSLoggerFactory.getLogger(null);
+        logger.info("VimondLiveArchiveModuleConfiguration.Loading");
+
         this.vimondLiveArchiveApiBaseUrl = appInstance.getProperties().getPropertyStr("liveArchiveBaseUrl");
 
         String archiveTenant = appInstance.getProperties().getPropertyStr("liveArchiveBaseTenant");
@@ -64,6 +69,8 @@ public class VimondLiveArchiveModuleConfiguration {
 
         this.wowzaPushTargetWorkingDirectory = appInstance.getProperties().getPropertyStr("pushPublishTempDir", "/tmp/");
         this.wowzaPushTargetLocalHousekeeping = appInstance.getProperties().getPropertyBoolean("housekeepingEnabled", false);
+
+        logger.info("VimondLiveArchiveModuleConfiguration.Loading.complete");
     }
 
     public String getVimondLiveArchiveApiBaseUrl() {
