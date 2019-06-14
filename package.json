@@ -1,6 +1,6 @@
 {
   "name": "vimond-wowza-plugin-examples",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Wowza Streaming Engine modules for pushing a HLS stream to S3 and registering the stream for use in Vimond IO",
   "main": "index.js",
   "scripts": {
