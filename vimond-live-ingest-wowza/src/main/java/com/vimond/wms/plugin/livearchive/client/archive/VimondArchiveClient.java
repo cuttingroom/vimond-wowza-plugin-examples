@@ -68,7 +68,7 @@ public class VimondArchiveClient {
             Header location = response.getFirstHeader("location");
             URI uri = new URI(location.getValue());
 
-            WMSLoggerFactory.getLogger(null).warn("ModuleVimondLiveArchiver.VimondArchiveClient.createEvent: " + uri.getPath());
+            WMSLoggerFactory.getLogger(null).warn("ModuleVimondLiveArchiver.VimondArchiveClient.createEvent: [" + uri.getPath() + "]");
             return Optional.of(uri.getPath());
         } catch (Exception e) {
             WMSLoggerFactory.getLogger(null).error("ModuleVimondLiveArchiver.VimondArchiveClient.createEvent", e);
@@ -120,7 +120,7 @@ public class VimondArchiveClient {
                 return false;
             }
 
-            WMSLoggerFactory.getLogger(null).warn("ModuleVimondLiveArchiver.VimondArchiveClient.deleteEvent: " + request.getURI().getPath());
+            WMSLoggerFactory.getLogger(null).warn("ModuleVimondLiveArchiver.VimondArchiveClient.deleteEvent: [" + request.getURI().getPath() + "]");
 
             return true;
         } catch (Exception e) {

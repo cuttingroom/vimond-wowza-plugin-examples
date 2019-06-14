@@ -60,11 +60,11 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
     }
 
     private static void log(String streamName, String event, String action) {
-        logger.warn("ModuleVimondLiveArchiver." + event + "." + action + ": " + streamName);
+        logger.warn("ModuleVimondLiveArchiver." + event + "." + action + " triggered by stream [" + streamName + "]");
     }
 
     private static void logError(String streamName, String event, String error) {
-        logger.error("ModuleVimondLiveArchiver." + event + ": " + streamName + " - " + error);
+        logger.error("ModuleVimondLiveArchiver." + event + " triggered by stream [" + streamName + "]. Error: " + error);
     }
 
     public void stopPublisher(IMediaStream stream) {
@@ -110,8 +110,6 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                             while (!doneCliping) {
 
                                 String clipName = streamInitInfo.getName() + ": Part " + part;
-                                log(stream.getName(), "creating archive clip", clipName);
-
                                 Optional<ClipStatus> clipStatus = vimondArchiveClient.createClip(
                                         streamInitInfo.getResource(),
                                         clipName,
@@ -120,6 +118,8 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
 
                                 doneCliping = Boolean.TRUE;
                                 if (clipStatus.isPresent()) {
+                                    log(stream.getName(), "created archive clip", "[" + clipName + "]");
+
                                     // If the previous clips was not empty, we use the last fragment time as the start of the next chunk for accuracy for accuracy
                                     Optional<Instant> accurateEnd = clipStatus.get().getEnd();
                                     if (accurateEnd.isPresent()) {
@@ -134,7 +134,7 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                         }
                     }
                     // Unregister event from vimond live archive
-                    log(stream.getName(), "onUnPublish", "Unregister stream from Vimond Live Archive");
+                    log(stream.getName(), "onUnPublish", "Unregister stream from Vimond IO");
                     vimondArchiveClient.deleteEvent(streamInitInfo.getResource());
                 }
             }
