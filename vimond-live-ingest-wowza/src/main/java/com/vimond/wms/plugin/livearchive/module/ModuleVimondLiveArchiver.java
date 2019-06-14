@@ -37,9 +37,9 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
         Auth0Credentials auth0Credentials;
         try {
             auth0Credentials = new Auth0Credentials(
-                config.getVimondLiveArchiveAuth0ClientId(),
-                config.getVimondLiveArchiveAuth0ClientSecret(),
-                config.getVimondLiveArchiveAuth0Audience(),
+                config.getAuth0ClientId(),
+                config.getAuth0ClientSecret(),
+                config.getAuth0Audience(),
                 Auth0Credentials.CLIENT_CREDENTIALS_GRANT_TYPE
             );
         } catch (Exception e) {
@@ -48,9 +48,9 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
         }
         try {
             return new VimondArchiveClient(
-                    config.getVimondLiveArchiveApiBaseUrl(),
-                    config.getVimondLiveArchiveApiTenant(),
-                    config.getVimondLiveArchiveAuth0Domain(),
+                    config.getIoDomain(),
+                    config.getIoClientId(),
+                    config.getAuth0Domain(),
                     auth0Credentials
             );
         } catch (Exception e) {
@@ -96,7 +96,7 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                 VimondArchiveClient vimondArchiveClient = createVimondArchiveClient(config);
 
 
-                if (config.getVimondLiveArchiveEnabled()) {
+                if (config.getIoClientId() != null) {
                     // Do not archive clips longer than 24 hours, those are considered to be linear
                     if (streamInitInfo.getStartTime().isAfter(Instant.now().minus(Duration.ofHours(24)))) {
 
@@ -114,7 +114,7 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                                     streamInitInfo.getResource(),
                                     clipName,
                                     clipStartTime,
-                                    config.getVimondLiveArchiveChunkDuration());
+                                    config.getIoArchiveChunkDuration());
 
                             doneCliping = Boolean.TRUE;
                             if (clipStatus.isPresent()) {
@@ -128,12 +128,10 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                             }
                         }
                     }
+                    // Unregister event from vimond live archive
+                    log(stream.getName(), "onUnPublish", "Unregister stream from Vimond Live Archive");
+                    vimondArchiveClient.deleteEvent(streamInitInfo.getResource());
                 }
-
-                // Unregister event from vimond live archive
-                log(stream.getName(), "onUnPublish", "Unregister stream from Vimond Live Archive");
-                vimondArchiveClient.deleteEvent(streamInitInfo.getResource());
-
             }
         } catch (Exception e) {
             logError(stream.getName(), "onUnPublish", e.toString());
@@ -207,49 +205,57 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                         log(streamName, "onPublish", "Loading VimondLiveArchiveModuleConfiguration");
                         VimondLiveArchiveModuleConfiguration config = new VimondLiveArchiveModuleConfiguration(appInstance);
 
-                        // Register new live archive ingest location towards Vimond Live Archive API
-                        log(streamName, "onPublish", "Loading VimondArchiveClient");
-                        VimondArchiveClient vimondArchiveClient = createVimondArchiveClient(config);
+                        Optional<String> eventResource = Optional.empty();
+                        if (config.getIoClientId() != null) {
 
+                            // Register new live archive ingest location towards Vimond Live Archive API
+                            log(streamName, "onPublish", "Loading VimondArchiveClient");
+                            VimondArchiveClient vimondArchiveClient = createVimondArchiveClient(config);
 
-                        Optional<String> eventResource = vimondArchiveClient.createEvent(
-                                new Bucket(config.getVimondLiveArchiveIngestBucketName(), config.getVimondLiveArchiveRegion()),
-                                new Bucket(config.getVimondLiveArchiveArchiveBucketName(), config.getVimondLiveArchiveRegion()),
-                                VIMOND_TARGET_PREFIX + streamName,
-                                streamName
+                            eventResource = vimondArchiveClient.createEvent(
+                                    new Bucket(config.getS3IngestBucketName(), config.getPublishRegion()),
+                                    new Bucket(config.getS3ArchiveBucketName(), config.getPublishRegion()),
+                                    VIMOND_TARGET_PREFIX + streamName,
+                                    streamName
+                            );
+
+                        }
+
+                        log(streamName, "onPublish", "Activating new push target towards S3");
+
+                        // Activate the new push target towards S3
+                        TargetClient targetClient = new TargetClient(
+                                config.getWowzaPushTargetApiUsername(),
+                                config.getWowzaPushTargetApiPassword()
                         );
+                        targetClient.createStreamTarget(
+                                appInstance.getApplication().getName(),
+                                streamName,
+                                config.getS3IngestBucketName(),
+                                config.getPublishRegion(),
+                                config.getS3AccessKey(),
+                                config.getS3SecretKey(),
+                                config.getWowzaPushTargetWorkingDirectory(),
+                                config.getWowzaPushTargetLocalHousekeeping()
+                        );
+                        log(streamName, "onPublish",
+                                "Stream Target created: [" +
+                                        " S3 IngestBucketName: " + config.getS3IngestBucketName() +
+                                        ", S3 Access Key: " + config.getS3AccessKey() +
+                                        ", S3 Secret Key: XXXXXXXXXX" + config.getS3SecretKey().substring(config.getS3SecretKey().length() - 4) +
+                                        ", LiveArchiveRegion: " + config.getPublishRegion() +
+                                        "]");
 
-                        if (eventResource.isPresent()) {
-                            log(streamName, "onPublish", "Activating new push target towards S3");
-
-                            // Activate the new push target towards S3
-                            TargetClient targetClient = new TargetClient(
-                                    config.getWowzaPushTargetApiUsername(),
-                                    config.getWowzaPushTargetApiPassword()
-                            );
-                            targetClient.createStreamTarget(
-                                    appInstance.getApplication().getName(),
-                                    streamName,
-                                    config.getVimondLiveArchiveIngestBucketName(),
-                                    config.getVimondLiveArchiveRegion(),
-                                    config.getVimondLiveArchiveIngestBucketAccessKey(),
-                                    config.getVimondLiveArchiveIngestBucketSecret(),
-                                    config.getWowzaPushTargetWorkingDirectory(),
-                                    config.getWowzaPushTargetLocalHousekeeping()
-                            );
-                            log(streamName, "onPublish",
-                                    "Stream Target created: [" +
-                                            " S3 IngestBucketName: " + config.getVimondLiveArchiveIngestBucketName() +
-                                            ", S3 Access Key: " + config.getVimondLiveArchiveIngestBucketAccessKey() +
-                                            ", S3 Secret Key: XXXXXXXXXX" + config.getVimondLiveArchiveIngestBucketSecret().substring(config.getVimondLiveArchiveIngestBucketSecret().length() - 4) +
-                                            ", LiveArchiveRegion: " + config.getVimondLiveArchiveRegion() +
-                                            "]");
-
-                            // Store startup details
+                        // Store startup details
+                        if(eventResource.isPresent()) {
                             StreamInitInfo initInfo = new StreamInitInfo(streamName, Instant.now(), eventResource.get());
+                            publishers.put(stream, initInfo);
+                        } else {
+                            StreamInitInfo initInfo = new StreamInitInfo(streamName, Instant.now(), null);
                             publishers.put(stream, initInfo);
                         }
                     }
+
                 } catch (Exception e) {
                     logError(streamName, "onPublish", e.toString());
                 }

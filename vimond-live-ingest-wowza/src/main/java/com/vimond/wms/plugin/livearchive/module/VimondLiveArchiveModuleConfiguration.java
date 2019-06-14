@@ -14,23 +14,21 @@ import java.time.Duration;
  */
 public class VimondLiveArchiveModuleConfiguration {
 
-    private String vimondLiveArchiveApiBaseUrl;
-    private String vimondLiveArchiveApiTenant;
+    private String ioDomain;
+    private String ioClientId;
+    private Duration ioArchiveChunkDuration;
 
-    private String vimondLiveArchiveAuth0Domain;
-    private String vimondLiveArchiveAuth0Audience;
-    private String vimondLiveArchiveAuth0ClientId;
-    private String vimondLiveArchiveAuth0ClientSecret;
+    private String auth0Domain;
+    private String auth0Audience;
+    private String auth0ClientId;
+    private String auth0ClientSecret;
 
-    private String vimondLiveArchiveRegion;
-    private String vimondLiveArchiveIngestBucketName;
-    private String vimondLiveArchiveIngestBucketAccessKey;
-    private String vimondLiveArchiveIngestBucketSecret;
-    private String vimondLiveArchiveArchiveBucketName;
+    private String s3Region;
+    private String s3IngestBucketName;
+    private String s3AccessKey;
+    private String s3SecretKey;
+    private String s3ArchiveBucketName;
 
-
-    private Boolean vimondLiveArchiveEnabled;
-    private Duration vimondLiveArchiveChunkDuration;
 
     private String wowzaPushTargetApiUsername;
     private String wowzaPushTargetApiPassword;
@@ -42,87 +40,75 @@ public class VimondLiveArchiveModuleConfiguration {
         WMSLogger logger = WMSLoggerFactory.getLogger(null);
         logger.info("VimondLiveArchiveModuleConfiguration.Loading");
 
-        this.vimondLiveArchiveApiBaseUrl = appInstance.getProperties().getPropertyStr("liveArchiveBaseUrl");
+        this.ioDomain = appInstance.getProperties().getPropertyStr("ioDomain", null);
+        this.ioClientId = appInstance.getProperties().getPropertyStr("ioClientId", null);
+        this.ioArchiveChunkDuration = Duration.parse(appInstance.getProperties().getPropertyStr("ioArchiveDuration", "PT3H"));
 
-        String archiveTenant = appInstance.getProperties().getPropertyStr("liveArchiveBaseTenant");
-        if (archiveTenant == null || archiveTenant.isEmpty()) {
-            archiveTenant = appInstance.getApplication().getName();
-        }
-        this.vimondLiveArchiveApiTenant = archiveTenant;
+        this.auth0Domain = appInstance.getProperties().getPropertyStr("auth0Domain");
+        this.auth0Audience = appInstance.getProperties().getPropertyStr("auth0Audience");
+        this.auth0ClientId = appInstance.getProperties().getPropertyStr("auth0ClientId");
+        this.auth0ClientSecret = appInstance.getProperties().getPropertyStr("auth0ClientSecret");
 
-        this.vimondLiveArchiveAuth0Domain = appInstance.getProperties().getPropertyStr("auth0Domain");
-        this.vimondLiveArchiveAuth0Audience = appInstance.getProperties().getPropertyStr("auth0Audience");
-        this.vimondLiveArchiveAuth0ClientId = appInstance.getProperties().getPropertyStr("auth0ClientId");
-        this.vimondLiveArchiveAuth0ClientSecret = appInstance.getProperties().getPropertyStr("auth0ClientSecret");
+        this.s3Region = appInstance.getProperties().getPropertyStr("s3Region");
+        this.s3IngestBucketName = appInstance.getProperties().getPropertyStr("s3IngestBucketName");
+        this.s3ArchiveBucketName = appInstance.getProperties().getPropertyStr("s3ArchiveBucketName");
+        this.s3AccessKey = appInstance.getProperties().getPropertyStr("s3AccessKey");
+        this.s3SecretKey = appInstance.getProperties().getPropertyStr("s3SecretKey");
 
-        this.vimondLiveArchiveRegion = appInstance.getProperties().getPropertyStr("pushPublishS3Region");
-        this.vimondLiveArchiveIngestBucketName = appInstance.getProperties().getPropertyStr("pushPublishS3Bucket");
-        this.vimondLiveArchiveIngestBucketAccessKey = appInstance.getProperties().getPropertyStr("pushPublishS3AccessKey");
-        this.vimondLiveArchiveIngestBucketSecret = appInstance.getProperties().getPropertyStr("pushPublishS3AccessSecret");
-        this.vimondLiveArchiveArchiveBucketName = appInstance.getProperties().getPropertyStr("pushPublishArchiveS3Bucket");
-
-        this.vimondLiveArchiveEnabled = appInstance.getProperties().getPropertyBoolean("liveArchiveEnabled", false);
-        this.vimondLiveArchiveChunkDuration = Duration.parse(appInstance.getProperties().getPropertyStr("liveArchiveDuration"));
-
-        this.wowzaPushTargetApiUsername = appInstance.getProperties().getPropertyStr("pushPublishApiUsername");
-        this.wowzaPushTargetApiPassword = appInstance.getProperties().getPropertyStr("pushPublishApiPassword");
-
-        this.wowzaPushTargetWorkingDirectory = appInstance.getProperties().getPropertyStr("pushPublishTempDir", "/tmp/");
-        this.wowzaPushTargetLocalHousekeeping = appInstance.getProperties().getPropertyBoolean("housekeepingEnabled", false);
+        this.wowzaPushTargetApiUsername = appInstance.getProperties().getPropertyStr("wowzaPushTargetApiUsername");
+        this.wowzaPushTargetApiPassword = appInstance.getProperties().getPropertyStr("wowzaPushTargetApiPassword");
+        this.wowzaPushTargetWorkingDirectory = appInstance.getProperties().getPropertyStr("wowzaPushTargetWorkingDirectory", "/tmp/");
+        this.wowzaPushTargetLocalHousekeeping = appInstance.getProperties().getPropertyBoolean("wowzaPushTargetLocalHousekeeping", true);
 
         logger.info("VimondLiveArchiveModuleConfiguration.Loading.complete");
     }
 
-    public String getVimondLiveArchiveApiBaseUrl() {
-        return vimondLiveArchiveApiBaseUrl;
+    public String getIoDomain() {
+        return ioDomain;
     }
 
-    public String getVimondLiveArchiveApiTenant() {
-        return vimondLiveArchiveApiTenant;
+    public String getIoClientId() {
+        return ioClientId;
     }
 
-    public String getVimondLiveArchiveAuth0Domain() {
-        return vimondLiveArchiveAuth0Domain;
+    public String getAuth0Domain() {
+        return auth0Domain;
     }
 
-    public String getVimondLiveArchiveAuth0Audience() {
-        return vimondLiveArchiveAuth0Audience;
+    public String getAuth0Audience() {
+        return auth0Audience;
     }
 
-    public String getVimondLiveArchiveAuth0ClientId() {
-        return vimondLiveArchiveAuth0ClientId;
+    public String getAuth0ClientId() {
+        return auth0ClientId;
     }
 
-    public String getVimondLiveArchiveAuth0ClientSecret() {
-        return vimondLiveArchiveAuth0ClientSecret;
+    public String getAuth0ClientSecret() {
+        return auth0ClientSecret;
     }
 
-    public String getVimondLiveArchiveRegion() {
-        return vimondLiveArchiveRegion;
+    public String getPublishRegion() {
+        return s3Region;
     }
 
-    public String getVimondLiveArchiveIngestBucketName() {
-        return vimondLiveArchiveIngestBucketName;
+    public String getS3IngestBucketName() {
+        return s3IngestBucketName;
     }
 
-    public String getVimondLiveArchiveIngestBucketAccessKey() {
-        return vimondLiveArchiveIngestBucketAccessKey;
+    public String getS3AccessKey() {
+        return s3AccessKey;
     }
 
-    public String getVimondLiveArchiveIngestBucketSecret() {
-        return vimondLiveArchiveIngestBucketSecret;
+    public String getS3SecretKey() {
+        return s3SecretKey;
     }
 
-    public String getVimondLiveArchiveArchiveBucketName() {
-        return vimondLiveArchiveArchiveBucketName;
+    public String getS3ArchiveBucketName() {
+        return s3ArchiveBucketName;
     }
 
-    public Boolean getVimondLiveArchiveEnabled() {
-        return vimondLiveArchiveEnabled;
-    }
-
-    public Duration getVimondLiveArchiveChunkDuration() {
-        return vimondLiveArchiveChunkDuration;
+    public Duration getIoArchiveChunkDuration() {
+        return ioArchiveChunkDuration;
     }
 
     public String getWowzaPushTargetApiUsername() {
