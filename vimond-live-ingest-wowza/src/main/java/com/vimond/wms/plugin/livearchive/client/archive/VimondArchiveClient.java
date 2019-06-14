@@ -1,5 +1,7 @@
 package com.vimond.wms.plugin.livearchive.client.archive;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vimond.wms.plugin.livearchive.client.auth0.Auth0AccessTokens;
 import com.vimond.wms.plugin.livearchive.client.auth0.Auth0Client;
@@ -18,6 +20,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -85,9 +88,8 @@ public class VimondArchiveClient {
             ClipStatus clipStatus = this.mapper.readValue(response.getEntity().getContent(), ClipStatus.class);
 
             return Optional.of(clipStatus);
-        } catch (Exception e) {
-            WMSLoggerFactory.getLogger(null).error("ModuleVimondLiveArchiver.VimondArchiveClient.createClip",  e);
-            return Optional.empty();
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -98,8 +100,7 @@ public class VimondArchiveClient {
 
         HttpResponse response = this.client.execute(this.target, request);
         if(response.getStatusLine().getStatusCode() == 401) {
-            String error = "ModuleVimondLiveArchiver.VimondArchiveClient Authentication failed. Please check Vimond Archive and Auth0 configuration.";
-            WMSLoggerFactory.getLogger(null).error(error);
+            String error = "ModuleVimondLiveArchiver.VimondArchiveClient Authentication failed. Please check Vimond IO and Auth0 configuration. ";
             throw new RuntimeException(error);
         }
         return response;
@@ -131,9 +132,7 @@ public class VimondArchiveClient {
     private void setHeaders(HttpRequestBase request) {
         request.addHeader("Content-Type", "application/json");
         request.addHeader("Accept", "application/json");
-        if (auth0Token.isPresent()) {
-            request.addHeader("Authorization", auth0Token.get().getAuthorizationHeader());
-        }
+        request.addHeader("Authorization", auth0Token.get().getAuthorizationHeader());
     }
 
 

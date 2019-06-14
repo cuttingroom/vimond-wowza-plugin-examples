@@ -106,26 +106,31 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                         Boolean doneCliping = Boolean.FALSE;
                         Instant clipStartTime = streamInitInfo.getStartTime();
 
-                        while (!doneCliping) {
+                        try {
+                            while (!doneCliping) {
 
-                            String clipName = streamInitInfo.getName() + ": Part " + part;
+                                String clipName = streamInitInfo.getName() + ": Part " + part;
+                                log(stream.getName(), "creating archive clip", clipName);
 
-                            Optional<ClipStatus> clipStatus = vimondArchiveClient.createClip(
-                                    streamInitInfo.getResource(),
-                                    clipName,
-                                    clipStartTime,
-                                    config.getIoArchiveChunkDuration());
+                                Optional<ClipStatus> clipStatus = vimondArchiveClient.createClip(
+                                        streamInitInfo.getResource(),
+                                        clipName,
+                                        clipStartTime,
+                                        config.getIoArchiveChunkDuration());
 
-                            doneCliping = Boolean.TRUE;
-                            if (clipStatus.isPresent()) {
-                                // If the previous clips was not empty, we use the last fragment time as the start of the next chunk for accuracy for accuracy
-                                Optional<Instant> accurateEnd = clipStatus.get().getEnd();
-                                if (accurateEnd.isPresent()) {
-                                    clipStartTime = accurateEnd.get();
-                                    part += 1;
-                                    doneCliping = Boolean.FALSE;
+                                doneCliping = Boolean.TRUE;
+                                if (clipStatus.isPresent()) {
+                                    // If the previous clips was not empty, we use the last fragment time as the start of the next chunk for accuracy for accuracy
+                                    Optional<Instant> accurateEnd = clipStatus.get().getEnd();
+                                    if (accurateEnd.isPresent()) {
+                                        clipStartTime = accurateEnd.get();
+                                        part += 1;
+                                        doneCliping = Boolean.FALSE;
+                                    }
                                 }
                             }
+                        } catch (Exception e) {
+                            logError(stream.getName(), "error", e.toString());
                         }
                     }
                     // Unregister event from vimond live archive
