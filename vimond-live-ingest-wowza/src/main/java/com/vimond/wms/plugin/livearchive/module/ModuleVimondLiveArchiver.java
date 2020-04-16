@@ -33,7 +33,9 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
     Map<IMediaStream, StreamInitInfo> publishers = new HashMap<IMediaStream, StreamInitInfo>();
 
     private static VimondArchiveClient createVimondArchiveClient(VimondLiveArchiveModuleConfiguration config) {
-
+        if(config.getIoDomain() == null) {
+            return null;
+        }
         Auth0Credentials auth0Credentials;
         try {
             auth0Credentials = new Auth0Credentials(
@@ -95,8 +97,7 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                 log(stream.getName(), "onUnPublish", "Loading VimondArchiveClient");
                 VimondArchiveClient vimondArchiveClient = createVimondArchiveClient(config);
 
-
-                if (config.getIoClientId() != null) {
+                if (vimondArchiveClient != null) {
                     // Do not archive clips longer than 24 hours, those are considered to be linear
                     if (streamInitInfo.getStartTime().isAfter(Instant.now().minus(Duration.ofHours(24)))) {
 
@@ -211,19 +212,17 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                         VimondLiveArchiveModuleConfiguration config = new VimondLiveArchiveModuleConfiguration(appInstance);
 
                         Optional<String> eventResource = Optional.empty();
-                        if (config.getIoClientId() != null) {
 
+                        log(streamName, "onPublish", "Loading VimondArchiveClient");
+                        VimondArchiveClient vimondArchiveClient = createVimondArchiveClient(config);
+                        if (vimondArchiveClient != null) {
                             // Register new live archive ingest location towards Vimond Live Archive API
-                            log(streamName, "onPublish", "Loading VimondArchiveClient");
-                            VimondArchiveClient vimondArchiveClient = createVimondArchiveClient(config);
-
                             eventResource = vimondArchiveClient.createEvent(
-                                    new Bucket(config.getS3IngestBucketName(), config.getPublishRegion()),
-                                    new Bucket(config.getS3ArchiveBucketName(), config.getPublishRegion()),
+                                    new Bucket(config.getS3IngestBucketName(), config.getS3Region()),
+                                    new Bucket(config.getS3ArchiveBucketName(), config.getS3Region()),
                                     VIMOND_TARGET_PREFIX + streamName,
                                     streamName
                             );
-
                         }
 
                         log(streamName, "onPublish", "Activating new push target towards S3");
@@ -237,7 +236,7 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                                 appInstance.getApplication().getName(),
                                 streamName,
                                 config.getS3IngestBucketName(),
-                                config.getPublishRegion(),
+                                config.getS3Region(),
                                 config.getS3AccessKey(),
                                 config.getS3SecretKey(),
                                 config.getWowzaPushTargetWorkingDirectory(),
@@ -248,7 +247,7 @@ public class ModuleVimondLiveArchiver extends ModuleBase {
                                         " S3 IngestBucketName: " + config.getS3IngestBucketName() +
                                         ", S3 Access Key: " + config.getS3AccessKey() +
                                         ", S3 Secret Key: XXXXXXXXXX" + config.getS3SecretKey().substring(config.getS3SecretKey().length() - 4) +
-                                        ", LiveArchiveRegion: " + config.getPublishRegion() +
+                                        ", S3 Region: " + config.getS3Region() +
                                         "]");
 
                         // Store startup details

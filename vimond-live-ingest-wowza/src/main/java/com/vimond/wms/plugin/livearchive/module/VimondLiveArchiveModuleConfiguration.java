@@ -87,7 +87,7 @@ public class VimondLiveArchiveModuleConfiguration {
         return auth0ClientSecret;
     }
 
-    public String getPublishRegion() {
+    public String getS3Region() {
         return s3Region;
     }
 

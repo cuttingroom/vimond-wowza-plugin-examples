@@ -1,5 +1,6 @@
 package com.vimond.wms.plugin.pushpublish.protocol.cupertino;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -35,7 +36,7 @@ import java.util.Optional;
  *
  * This push target sends the HLS stream into an S3 bucket using the following template
  * <streamName>/index.m3u8
- * <streamName>/index/<sequenceNr>_media.m3u8
+ * <streamName>/index/chunklist.m3u8
  * <streamName>/index/chunklist/_<sequenceNr>.ts
  *
  * @author Vimond Media Solution AS
@@ -192,6 +193,7 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
     @Override
     public int sendGroupMasterPlaylist(String groupName, PlaylistModel playlist)
     {
+        logInfo("sendGroupMasterPlaylist", playlist.toString());
         int retVal = 0;
         FileOutputStream output = null;
         try
@@ -228,6 +230,7 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
     @Override
     public int sendMasterPlaylist(PlaylistModel playlist)
     {
+        logInfo("sendMasterPlaylist", playlist.toString());
         int retVal = 0;
         FileOutputStream output = null;
         try
@@ -247,6 +250,7 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
 
             if (this.s3Client.isPresent() && this.s3Bucket.isPresent()) {
                 String key = getDstStreamName() + "/index.m3u8";
+                logInfo("s3 put:", this.s3Bucket.get() + "/" + key);
                 this.s3Client.get().putObject(this.s3Bucket.get(), key, playlistFile);
             }
 
@@ -276,6 +280,7 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
     @Override
     public int sendMediaPlaylist(PlaylistModel playlist)
     {
+        logInfo("sendMediaPlaylist", playlist.toString());
         int retVal = 0;
         FileOutputStream output = null;
         try
@@ -293,26 +298,15 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
 
             if(this.s3Client.isPresent() && this.s3Bucket.isPresent()) {
                 String key = getDstStreamName() + "/" + playlist.getUri();
+                logInfo("s3 put:", this.s3Bucket.get() + "/" + key);
                 this.s3Client.get().putObject(this.s3Bucket.get(), key, playlistFile);
+            } else {
+                logError("s3 client missing:", this.s3Client.isPresent()  + " " +this.s3Bucket.isPresent());
             }
-
-
-            // Now creating the timing file
-            Optional<Integer> sequence = extractSequenceNumberFromMediaPlaylist(playlist);
-            if (sequence.isPresent()) {
-                if(this.s3Client.isPresent() && this.s3Bucket.isPresent()) {
-                    String playlist_path = playlist.getUri().getPath();
-                    String timing_key = getDstStreamName() + "/" + playlist_path.substring(0, playlist_path.lastIndexOf("/") + 1) + sequence.get() + "_media.m3u8";
-                    this.s3Client.get().putObject(this.s3Bucket.get(), timing_key, playlistFile);
-                }
-            }
-
 
             if (housekeeping) {
                 playlistFile.delete();
             }
-
-
         }
         catch (Exception e)
         {
@@ -326,7 +320,7 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
                     output.close();
                 } catch (Exception e2)
                 {
-
+                    logError("sendMediaPlaylist", "Exception while closing output file", e2);
                 };
         }
         return retVal;
@@ -335,6 +329,7 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
     @Override
     public int sendMediaSegment(MediaSegmentModel mediaSegment)
     {
+        logInfo("sendMediaSegment", mediaSegment.toString());
         int retVal = 0;
         FileOutputStream output = null;
         try
@@ -375,6 +370,7 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
 
             if (this.s3Client.isPresent() && this.s3Bucket.isPresent()) {
                 String key = getDstStreamName() + "/index/" +  mediaSegment.getUri();
+                logInfo("s3 put:", this.s3Bucket.get() + "/" + key);
                 this.s3Client.get().putObject(this.s3Bucket.get(), key, file);
             }
 
@@ -408,6 +404,7 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
     @Override
     public int deleteMediaSegment(MediaSegmentModel mediaSegment)
     {
+        logInfo("deleteMediaSegment", mediaSegment.toString());
         int retVal = 0;
 
         File segment = new File(getDestionationDir() + "/" + mediaSegment.getUri());
@@ -491,7 +488,6 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
     }
 
     private Optional<AmazonS3> createS3Client(HashMap<String, String> dataMap) {
-
         Optional<String> s3Region = findConfigParameter(dataMap, "bucketRegion");
         Optional<String> s3AccessKey = findConfigParameter(dataMap, "bucketKey");
         Optional<String> s3AccessSecret = findConfigParameter(dataMap, "bucketSecret");
@@ -503,7 +499,17 @@ public class PushPublishHTTPCupertinoS3Handler extends PushPublishHTTPCupertino 
 
         if (s3Region.isPresent()) {
             if (s3AccessKey.isPresent() && s3Secret.isPresent()) {
+
+                ClientConfiguration clientConfiguration = new ClientConfiguration()
+                        .withConnectionTimeout(10000)
+                        .withSocketTimeout(10000)
+                        .withRequestTimeout(10000)
+                        .withClientExecutionTimeout(30000)
+                        .withRequestTimeout(10000)
+                        .withMaxErrorRetry(3);
+
                 return Optional.of(AmazonS3ClientBuilder.standard()
+                        .withClientConfiguration(clientConfiguration)
                         .withRegion(s3Region.get())
                         .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(s3AccessKey.get(), s3Secret.get())))
                         .build());

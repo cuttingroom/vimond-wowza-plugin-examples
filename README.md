@@ -8,6 +8,11 @@ Clone the project:
 git clone git@github.com:vimond/vimond-wowza-plugin-examples.git
 ```
 
+### Prerequisites
+
+- Gradle 6.x
+- Java 9.x
+
 ### Build the project
 
 You can build the project using gradle commands. Note that the build.gradle
@@ -15,8 +20,8 @@ configuration file contains reference to Vimond own maven repository. It is simp
 itself does not have any dependencies to any Vimond library so any public repository may be used.
 
 ```
-gradle clean
-gradle build
+gradle wrapper
+./gradlew build
 ```
 
 Once the custom Wowza modules are built and available in folder `vimond-live-ingest-wowza/build/libs`
